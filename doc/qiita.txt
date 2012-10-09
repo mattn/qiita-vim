@@ -1,0 +1,101 @@
+*qiita.txt* Qiita API Library
+
+           -------------------------------------------------------
+                          Qiita API Library For Vim
+           -------------------------------------------------------
+
+Author: Yasuhiro Matsumoto <mattn.jp@gmail.com>
+WebSite: http://mattn.kaoriya.net/
+Repository: http://github.com/mattn/qiita-vim
+License: BSD style license
+
+==============================================================================
+CONTENTS                                                        *qiita-contents*
+
+INTRODUCTION           |qiita-introduction|
+FUNCTIONS              |qiita-functions|
+LINKS                  |qiita-links|
+
+==============================================================================
+INTRODUCTION                                                *qiita-introduction*
+
+*qiita-vim* provides OOish API to access qiita. http://qiita.com
+
+==============================================================================
+FUNCTIONS                                                      *qiita-functions*
+
+
+createApi({token})                           *qiita-createAp()i*
+    Create API with given {token}. Return API object.
+>
+    let api = qiita#createApi('XXXXX')
+<
+createApiWithAuth({urlname}, {password})    *qiita-createApiWithAuth()*
+    Create API with given {urlname}/{password}. Return API object.
+>
+    let api = qiita#createApiWithAuth('USER', 'PASS')
+<
+api.rate_limit()                             *qiita-api-rate_limit()*
+    Return information about rate limits.
+>
+    let user = api.user('mattn@github')
+<
+
+api.user({name})                             *qiita-api-user()*
+    Get user information object for given {name}.
+>
+    let user = api.user('mattn@github')
+<
+api.tag({name})                              *qiita-api-tag()*
+    Get tag information object for given {name}.
+>
+    let tag = api.tag('Vim')
+<
+api.tags()                                   *qiita-api-tags()*
+    Return array of tag information object.
+>
+    let tags = api.tags()
+<
+api.post_item({params})                      *qiita-api-post_item()*
+    Post new item. {params} must be like following.
+>
+    call api.post_item({
+    \ 'title': 'from API',
+    \ 'body': 'Sorry, I love vim!',
+    \ 'tags': [{'name': 'Vim', 'versions': []}, {'name': 'API', 'versions': []}],
+    \ 'private': 1,
+    \})
+<
+user.items()                                  *qiita-user-items()*
+    Return array of item object.
+>
+    let items = user.items()
+<
+user.item({uuid})                             *qiita-user-item()*
+    Return item object for given {uuid}.
+>
+    let items = user.items()
+<
+user.stocks()                                 *qiita-user-stocks()*
+    Return array of stock information.
+>
+    let stocks = user.stocks()
+<
+tag.items()                                   *qiita-tag-items()*
+    Return array of item object which tagged with this tag.
+>
+    let items = tag.items()
+<
+item.delete()                                 *qiita-item-delete()*
+    Delete the item.
+>
+    call item.delete()
+<
+==============================================================================
+LINKS                                                              *qiita-links*
+
+Official API document.
+  http://qiita.com/docs
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:noet:fen:fdl=0:
