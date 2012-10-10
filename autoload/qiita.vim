@@ -180,7 +180,7 @@ function! qiita#login()
     let passqword = inputsecret("Qiita Password: ")
     let api = qiita#createApiWithAuth(url_name, passqword)
     let token = api.token
-    call writefile([token], s:configfile)
+    call writefile([url_name, token], s:configfile)
   endif
   return qiita#createApi(url_name, token)
 endfunction
