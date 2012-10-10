@@ -26,7 +26,7 @@ INTRODUCTION                                                *qiita-introduction*
 INTERFACES                                                     *qiita-interface*
 
 
-qiita#createApi({token})                          *qiita-createAp()i*
+qiita#createApi({token})                          *qiita-createApi()*
     Create API with given {token}. Return API object.
 >
     let api = qiita#createApi('XXXXX')
