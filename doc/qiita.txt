@@ -13,7 +13,8 @@ License: BSD style license
 CONTENTS                                                        *qiita-contents*
 
 INTRODUCTION           |qiita-introduction|
-FUNCTIONS              |qiita-functions|
+INTERFACE              |qiita-interface|
+COMMAND                |qiita-command|
 LINKS                  |qiita-links|
 
 ==============================================================================
@@ -22,15 +23,15 @@ INTRODUCTION                                                *qiita-introduction*
 *qiita-vim* provides OOish API to access qiita. http://qiita.com
 
 ==============================================================================
-FUNCTIONS                                                      *qiita-functions*
+INTERFACES                                                     *qiita-interface*
 
 
-createApi({token})                           *qiita-createAp()i*
+qiita#createApi({token})                          *qiita-createAp()i*
     Create API with given {token}. Return API object.
 >
     let api = qiita#createApi('XXXXX')
 <
-createApiWithAuth({urlname}, {password})    *qiita-createApiWithAuth()*
+qiita#createApiWithAuth({urlname}, {password})    *qiita-createApiWithAuth()*
     Create API with given {urlname}/{password}. Return API object.
 >
     let api = qiita#createApiWithAuth('USER', 'PASS')
@@ -90,6 +91,35 @@ item.delete()                                 *qiita-item-delete()*
     Delete the item.
 >
     call item.delete()
+<
+==============================================================================
+COMMMAND                                                         *qiita-command*
+
+- Post current buffer to qiita. >
+
+    :Qiita
+<
+- Edit the item (you need to have opened the qiita buffer first).
+  You can update the qiita with the {:w} command within the qiita buffer. >
+
+    :Qiita -e
+<
+- Delete the item (you need to have opened the qiita buffer first).
+  Password authentication is needed. >
+
+    :Qiita -d
+<
+- Get item XXXXX. >
+
+    :Qiita XXXXX
+<
+- List your items. >
+
+    :Qiita -l
+<
+- List items from user "cho45". >
+
+    :Qiita -l cho45
 <
 ==============================================================================
 LINKS                                                              *qiita-links*
