@@ -291,7 +291,7 @@ function! s:open_item(api, uuid)
   call setline(1, [webapi#html#decodeEntityReference(item.title)]+split(item.raw_body, "\n"))
   setlocal buftype=acwrite bufhidden=delete noswapfile
   setlocal nomodified
-  setlocal ft=mkd
+  setlocal ft=markdown
   au! BufWriteCmd <buffer> call s:write_action(expand("<amatch>"))
 endfunction
 
