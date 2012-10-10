@@ -217,24 +217,28 @@ function! s:delete_item(api, uuid)
   redraw | echomsg 'Done'
 endfunction
 
+function! s:fix_tags(tags)
+  for tag in a:tags
+    if tag.name == ''
+      let ext = expand('%:e')
+      if len(ext) == 0
+        let ext = &ft
+      endif
+      if len(ext) == 0
+        let ext = 'text'
+      endif
+      let tag['name'] = ext
+    endif
+  endfor
+endfunction
+
 function! s:write_item(api, uuid, title, content)
   if len(a:uuid)
     redraw | echon 'Updating item... '
     let item = a:api.item(a:uuid)
     let item.title = a:title
     let item.body = a:content
-    for tag in item.tags
-      if tag.name == ''
-        let ext = expand('%:e')
-        if len(ext) == 0
-          let ext = &ft
-        endif
-        if len(ext) == 0
-          let ext = 'text'
-        endif
-        let tag['name'] = ext
-      endif
-    endfor
+    call s:fix_tags(item.tags)
     call item.update()
   else
     redraw | echon 'Posting item... '
@@ -248,7 +252,7 @@ function! s:write_item(api, uuid, title, content)
     let item = a:api.post_item({
     \ 'title': a:title,
     \ 'body': a:content,
-    \ 'tags': [{'name': expand('%:e')}],
+    \ 'tags': [{'name': tag}],
     \ 'private': 0,
     \})
   endif
