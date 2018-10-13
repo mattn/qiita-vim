@@ -14,7 +14,7 @@ function! s:api.tag(name)
 endfunction
 
 function! s:api.tags()
-  let res = webapi#json#decode(webapi#http#get('https://qiita.com/api/v1/tags', {'token': self.token}).content)
+  let res = webapi#json#decode(webapi#http#get('https://qiita.com/api/v2/tags', {'token': self.token}).content)
   if type(res) == 4 && has_key(res, 'error')
     throw res.error
   endif
@@ -40,7 +40,7 @@ function! s:api.post_item(params)
   let params = deepcopy(a:params)
   let params['token'] = self.token
   if has_key(params, 'uuid')
-    let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v1/items/%s', params['uuid']), webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
+    let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', params['uuid']), webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
   else
     let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v1/items', webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
   endif
@@ -58,7 +58,7 @@ function! s:api.post_item(params)
 endfunction
 
 function! s:api.item(uuid)
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v1/items/%s', a:uuid)).content)
+  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/items/%s', a:uuid)).content)
   if has_key(res, 'error')
     throw res.error
   endif
@@ -74,7 +74,7 @@ function! s:api.item(uuid)
 endfunction
 
 function! s:api.user(user)
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v1/users/%s', a:user), {'token': self.token}).content)
+  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s', a:user), {'token': self.token}).content)
   if has_key(res, 'error')
     throw res.error
   endif
@@ -97,7 +97,7 @@ function! s:user.item(uuid)
 endfunction
 
 function! s:user.items()
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v1/users/%s/items', self.url_name), {'token': self.token}).content)
+  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s/items', self.url_name), {'token': self.token}).content)
   if type(res) == 4 && has_key(res, 'error')
     throw res.error
   endif
@@ -120,11 +120,11 @@ function! s:user.items()
 endfunction
 
 function! s:user.stocks()
-  return webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v1/users/%s/stocks', self.url_name), {'token': self.token}).content)
+  return webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s/stocks', self.url_name), {'token': self.token}).content)
 endfunction
 
 function! s:tag.items()
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v1/tags/%s/items', self.name), {'token': self.token}).content)
+  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/tags/%s/items', self.name), {'token': self.token}).content)
   if type(res) == 4 && has_key(res, 'error')
     throw res.error
   endif
@@ -147,7 +147,7 @@ function! s:tag.items()
 endfunction
 
 function! s:item.update()
-  let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v1/items/%s', self['uuid']), webapi#json#encode(self), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT'}).content)
+  let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['uuid']), webapi#json#encode(self), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT'}).content)
   if has_key(res, 'error')
     throw res.error
   endif
@@ -161,7 +161,7 @@ function! s:item.update()
 endfunction
 
 function! s:item.delete()
-  let res = webapi#http#post(printf('https://qiita.com/api/v1/items/%s', self['uuid']), {'token': self.token}, {'X-HTTP-Method-Override': 'DELETE'})
+  let res = webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['uuid']), {'token': self.token}, {'X-HTTP-Method-Override': 'DELETE'})
   if res.header[0] !~ ' 20[0-9] '
     throw res.header[0]
   endif
@@ -193,7 +193,7 @@ function! qiita#createApi(url_name, token)
 endfunction
 
 function! qiita#createApiWithAuth(url_name, password)
-  let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v1/auth', {'url_name': a:url_name, 'password': a:password}).content)
+  let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v2/auth', {'url_name': a:url_name, 'password': a:password}).content)
   if has_key(res, 'error')
     throw res.error
   endif
