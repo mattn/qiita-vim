@@ -81,6 +81,7 @@ function! s:api.user(user)
   let user = deepcopy(s:user)
   let user['token'] = self.token
   let user['item_count'] = res['items']
+  let user['url_name'] = self.url_name
   for [k, v] in items(res)
     if !has_key(user, k)
       let user[k] = v
