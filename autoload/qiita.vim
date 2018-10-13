@@ -15,8 +15,8 @@ endfunction
 
 function! s:api.tags()
   let res = webapi#json#decode(webapi#http#get('https://qiita.com/api/v2/tags', {'token': self.token}).content)
-  if type(res) == 4 && has_key(res, 'error')
-    throw res.error
+  if type(res) == 4 && has_key(res, 'type')
+    throw res.type
   endif
   if type(res) != 3
     throw 'invalid response'
@@ -44,8 +44,8 @@ function! s:api.post_item(params)
   else
     let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v2/items', webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
   endif
-  if has_key(res, 'error')
-    throw res.error
+  if has_key(res, 'type')
+    throw res.type
   endif
   let item = deepcopy(s:item)
   for [k, v] in items(res)
@@ -59,8 +59,8 @@ endfunction
 
 function! s:api.item(id)
   let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/items/%s', a:id)).content)
-  if has_key(res, 'error')
-    throw res.error
+  if has_key(res, 'type')
+    throw res.type
   endif
   let item = deepcopy(s:item)
   let item['token'] = self.token
@@ -75,8 +75,8 @@ endfunction
 
 function! s:api.user(user)
   let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s', a:user), {'token': self.token}).content)
-  if has_key(res, 'error')
-    throw res.error
+  if has_key(res, 'type')
+    throw res.type
   endif
   let user = deepcopy(s:user)
   let user['token'] = self.token
@@ -99,8 +99,8 @@ endfunction
 
 function! s:user.items()
   let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s/items', self.url_name), {'token': self.token}).content)
-  if type(res) == 4 && has_key(res, 'error')
-    throw res.error
+  if type(res) == 4 && has_key(res, 'type')
+    throw res.type
   endif
   if type(res) != 3
     throw 'invalid response'
@@ -126,8 +126,8 @@ endfunction
 
 function! s:tag.items()
   let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/tags/%s/items', self.name), {'token': self.token}).content)
-  if type(res) == 4 && has_key(res, 'error')
-    throw res.error
+  if type(res) == 4 && has_key(res, 'type')
+    throw res.type
   endif
   if type(res) != 3
     throw 'invalid response'
@@ -148,9 +148,9 @@ function! s:tag.items()
 endfunction
 
 function! s:item.update()
-  if has_key(res, 'error')
-    throw res.error
   let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), webapi#json#encode(self), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT'}).content)
+  if has_key(res, 'type')
+    throw res.type
   endif
   for [k, v] in items(res)
     if !has_key(self, k)
@@ -195,8 +195,8 @@ endfunction
 
 function! qiita#createApiWithAuth(url_name, password)
   let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v2/auth', {'url_name': a:url_name, 'password': a:password}).content)
-  if has_key(res, 'error')
-    throw res.error
+  if has_key(res, 'type')
+    throw res.type
   endif
   let api = deepcopy(s:api)
   let api['url_name'] = a:url_name
