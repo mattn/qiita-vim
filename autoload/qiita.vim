@@ -322,7 +322,7 @@ function! s:list_user_items(api, user)
     silent %d _
     redraw | echon 'Listing items... '
     let items = a:api.user(a:user).items()
-    call setline(1, split(join(map(items, 'v:val.uuid . ": " . webapi#html#decodeEntityReference(v:val.title)'), "\n"), "\n"))
+    call setline(1, split(join(map(items, 'v:val.id . ": " . webapi#html#decodeEntityReference(v:val.title)'), "\n"), "\n"))
   catch
     bw!
     redraw
