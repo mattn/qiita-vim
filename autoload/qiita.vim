@@ -179,9 +179,15 @@ function! qiita#login()
   if len(token) == 0
     let url_name = input("Qiita Username: ")
     let passqword = inputsecret("Qiita Password: ")
-    let api = qiita#createApiWithAuth(url_name, passqword)
-    let token = api.token
-    call writefile([url_name, token], s:configfile)
+    try
+      let api = qiita#createApiWithAuth(url_name, passqword)
+      let token = api.token
+      call writefile([url_name, token], s:configfile)
+    catch
+      redraw
+      echohl ErrorMsg | echomsg v:exception | echohl None
+      throw "couldn't authorize"
+    endtry
   endif
   return qiita#createApi(url_name, token)
 endfunction
@@ -250,12 +256,18 @@ function! s:write_item(api, id, title, content)
     if len(tag) == 0
       let tag = 'text'
     endif
-    let item = a:api.post_item({
-    \ 'title': a:title,
-    \ 'body': a:content,
-    \ 'tags': [{'name': tag}],
-    \ 'private': 0,
-    \})
+    try
+      let item = a:api.post_item({
+      \ 'title': a:title,
+      \ 'body': a:content,
+      \ 'tags': [{'name': tag}],
+      \ 'private': 0,
+      \})
+    catch
+      redraw
+      echohl ErrorMsg | echomsg v:exception | echohl None
+      return
+    endtry
   endif
   redraw | echomsg 'Done: ' . item.url
   setlocal nomodified
@@ -354,7 +366,13 @@ function! qiita#Qiita(...)
   let id = ''
   let editpost = 0
   let deletepost = 0
-  let api = qiita#login()
+  try
+    let api = qiita#login()
+  catch
+    redraw
+    echohl ErrorMsg | echomsg v:exception | echohl None
+    return
+  endtry
 
   let args = (a:0 > 0) ? s:shellwords(a:1) : []
   for arg in args
