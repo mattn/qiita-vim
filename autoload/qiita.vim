@@ -57,8 +57,8 @@ function! s:api.post_item(params)
   return item
 endfunction
 
-function! s:api.item(uuid)
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/items/%s', a:uuid)).content)
+function! s:api.item(id)
+  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/items/%s', a:id)).content)
   if has_key(res, 'error')
     throw res.error
   endif
@@ -271,8 +271,8 @@ function! s:write_action(fname)
   endif
 endfunction
 
-function! s:open_item(api, uuid)
-  let winnum = bufwinnr(bufnr('qiita:'.a:uuid))
+function! s:open_item(api, id)
+  let winnum = bufwinnr(bufnr('qiita:'.a:id))
   if winnum != -1
     if winnum != bufwinnr('%')
       exe winnum 'wincmd w'
@@ -281,15 +281,15 @@ function! s:open_item(api, uuid)
   else
     exec 'silent noautocmd new'
     setlocal noswapfile
-    exec 'noautocmd file qiita:'.a:uuid
+    exec 'noautocmd file qiita:'.a:id
   endif
   filetype detect
   silent %d _
   echon 'Getting item... '
   redraw
 
-  let item = a:api.item(a:uuid)
-  call setline(1, [webapi#html#decodeEntityReference(item.title)]+split(item.raw_body, "\n"))
+  let item = a:api.item(a:id)
+  call setline(1, [webapi#html#decodeEntityReference(item.title)]+split(item.body, "\n"))
   setlocal buftype=acwrite bufhidden=delete noswapfile
   setlocal nomodified
   setlocal ft=markdown
@@ -299,10 +299,10 @@ endfunction
 function! s:list_action()
   let line = getline('.')
   let mx = '^\([a-z0-9]\+\)\ze:'
-  let uuid = matchstr(line, mx)
-  if len(uuid)
+  let id = matchstr(line, mx)
+  if len(id)
     let api = qiita#createApi(b:qiita_url_name, b:qiita_token)
-    call s:open_item(api, uuid)
+    call s:open_item(api, id)
   endif
 endfunction
 
