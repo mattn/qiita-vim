@@ -4,7 +4,7 @@ let s:tag = {}
 let s:item = {}
 
 function! s:api.rate_limit()
-  return webapi#json#decode(webapi#http#get('https://qiita.com/api/v1/rate_limit', {'token': self.token}).content)
+  return webapi#json#decode(webapi#http#get('https://qiita.com/api/v2/rate_limit', {'token': self.token}).content)
 endfunction
 
 function! s:api.tag(name)
@@ -42,7 +42,7 @@ function! s:api.post_item(params)
   if has_key(params, 'uuid')
     let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', params['uuid']), webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
   else
-    let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v1/items', webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
+    let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v2/items', webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
   endif
   if has_key(res, 'error')
     throw res.error
