@@ -39,8 +39,8 @@ endfunction
 function! s:api.post_item(params)
   let params = deepcopy(a:params)
   let params['token'] = self.token
-  if has_key(params, 'uuid')
-    let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', params['uuid']), webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
+  if has_key(params, 'id')
+    let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', params['id']), webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
   else
     let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v2/items', webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
   endif
@@ -91,9 +91,9 @@ function! s:api.user(user)
   return user
 endfunction
 
-function! s:user.item(uuid)
+function! s:user.item(id)
   let items = self.items()
-  let items = filter(items, 'v:val.uuid == a:uuid')
+  let items = filter(items, 'v:val.id == a:id')
   return items[0]
 endfunction
 
@@ -148,9 +148,9 @@ function! s:tag.items()
 endfunction
 
 function! s:item.update()
-  let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['uuid']), webapi#json#encode(self), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT'}).content)
   if has_key(res, 'error')
     throw res.error
+  let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), webapi#json#encode(self), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT'}).content)
   endif
   for [k, v] in items(res)
     if !has_key(self, k)
@@ -162,7 +162,7 @@ function! s:item.update()
 endfunction
 
 function! s:item.delete()
-  let res = webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['uuid']), {'token': self.token}, {'X-HTTP-Method-Override': 'DELETE'})
+  let res = webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), {'token': self.token}, {'X-HTTP-Method-Override': 'DELETE'})
   if res.header[0] !~ ' 20[0-9] '
     throw res.header[0]
   endif
@@ -211,9 +211,9 @@ function! s:shellwords(str)
   return words
 endfunction
 
-function! s:delete_item(api, uuid)
+function! s:delete_item(api, id)
   redraw | echon 'Deleting item... '
-  let item = a:api.item(a:uuid)
+  let item = a:api.item(a:id)
   call item.delete()
   redraw | echomsg 'Done'
 endfunction
@@ -233,10 +233,10 @@ function! s:fix_tags(tags)
   endfor
 endfunction
 
-function! s:write_item(api, uuid, title, content)
-  if len(a:uuid)
+function! s:write_item(api, id, title, content)
+  if len(a:id)
     redraw | echon 'Updating item... '
-    let item = a:api.item(a:uuid)
+    let item = a:api.item(a:id)
     let item.title = a:title
     let item.body = a:content
     call s:fix_tags(item.tags)
@@ -351,7 +351,7 @@ function! qiita#Qiita(...)
   redraw
 
   let ls = ''
-  let uuid = ''
+  let id = ''
   let editpost = 0
   let deletepost = 0
   let api = qiita#login()
@@ -365,17 +365,17 @@ function! qiita#Qiita(...)
       let ls = api.url_name
     elseif arg =~ '^\(-e\|--edit\)$\C'
       let fname = expand("%:p")
-      let uuid = matchstr(fname, '.*qiita:\zs[a-z0-9]\+\ze$')
+      let id = matchstr(fname, '.*qiita:\zs[a-z0-9]\+\ze$')
       let editpost = 1
     elseif arg =~ '^\(-d\|--delete\)$\C'
       let fname = expand("%:p")
-      let uuid = matchstr(fname, '.*qiita:\zs[a-z0-9]\+\ze$')
+      let id = matchstr(fname, '.*qiita:\zs[a-z0-9]\+\ze$')
       let deletepost = 1
     elseif arg !~ '^-'
       if len(ls) > 0
         let ls = arg
       elseif arg =~ '^[0-9a-z]\+$\C'
-        let uuid = arg
+        let id = arg
       else
         echohl ErrorMsg | echomsg 'Invalid arguments: '.arg | echohl None
         unlet args
@@ -395,11 +395,11 @@ function! qiita#Qiita(...)
     if editpost
       let title = getline(1)
       let content = join(getline(2, line('$')), "\n")
-      call s:write_item(api, uuid, title, content)
+      call s:write_item(api, id, title, content)
     elseif deletepost
-      call s:delete_item(api, uuid)
-    elseif len(uuid) > 0
-      call s:open_item(api, uuid)
+      call s:delete_item(api, id)
+    elseif len(id) > 0
+      call s:open_item(api, id)
     else
       let title = getline(1)
       let content = join(getline(2, line('$')), "\n")
