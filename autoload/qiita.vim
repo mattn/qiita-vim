@@ -173,7 +173,7 @@ endfunction
 
 function! qiita#login()
   let token = ''
-  if filereadable(s:configfile)
+  if filereadable(s:configfile) && len(readfile(s:configfile)) != 0
     let lines = readfile(s:configfile)
     let url_name = lines[0]
     let token = lines[1]
