@@ -263,7 +263,7 @@ function! s:write_item(api, id, title, content)
       \ 'title': a:title,
       \ 'body': a:content,
       \ 'tags': [{'name': tag}],
-      \ 'private': 0,
+      \ 'private': v:false,
       \})
     catch
       redraw
