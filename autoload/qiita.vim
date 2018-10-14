@@ -185,7 +185,7 @@ function! qiita#login()
       call writefile([url_name, token], s:configfile)
     catch
       redraw
-      echohl ErrorMsg | echomsg v:exception | echohl None
+      echohl ErrorMsg | echomsg 'qiita#login: ' . v:exception | echohl None
       throw "couldn't authorize"
     endtry
   endif
@@ -265,7 +265,7 @@ function! s:write_item(api, id, title, content)
       \})
     catch
       redraw
-      echohl ErrorMsg | echomsg v:exception | echohl None
+      echohl ErrorMsg | echomsg 'write_item: ' . v:exception | echohl None
       return
     endtry
   endif
@@ -339,7 +339,7 @@ function! s:list_user_items(api, user)
   catch
     bw!
     redraw
-    echohl ErrorMsg | echomsg v:exception | echohl None
+    echohl ErrorMsg | echomsg 'list_user_items: ' . v:exception | echohl None
     return
   finally
     let &undolevels = old_undolevels
@@ -370,7 +370,7 @@ function! qiita#Qiita(...)
     let api = qiita#login()
   catch
     redraw
-    echohl ErrorMsg | echomsg v:exception | echohl None
+    echohl ErrorMsg | echomsg "qiita#Qiita: " . v:exception | echohl None
     return
   endtry
 
