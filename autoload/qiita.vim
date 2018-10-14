@@ -4,7 +4,7 @@ let s:tag = {}
 let s:item = {}
 
 function! s:api.rate_limit()
-  return webapi#json#decode(webapi#http#get('https://qiita.com/api/v2/rate_limit', {}, {'Authorization': 'Bearer ' . self.token}).content)
+  return json_decode(webapi#http#get('https://qiita.com/api/v2/rate_limit', {}, {'Authorization': 'Bearer ' . self.token}).content)
 endfunction
 
 function! s:api.tag(name)
@@ -14,7 +14,7 @@ function! s:api.tag(name)
 endfunction
 
 function! s:api.tags()
-  let res = webapi#json#decode(webapi#http#get('https://qiita.com/api/v2/tags', {}, {'Authorization': 'Bearer ' . self.token}).content)
+  let res = json_decode(webapi#http#get('https://qiita.com/api/v2/tags', {}, {'Authorization': 'Bearer ' . self.token}).content)
   if type(res) == 4 && has_key(res, 'type')
     throw res.type
   endif
@@ -40,10 +40,10 @@ function! s:api.post_item(params)
   let params = deepcopy(a:params)
   let params['token'] = self.token
   if has_key(params, 'id')
-    let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', params['id']), webapi#json#encode(params),
+    let res = json_decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', params['id']), json_encode(params),
                                                 \ {'Content-Type': 'application/json', 'Authorization': 'Bearer ' . self.token}).content)
   else
-    let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v2/items', webapi#json#encode(params),
+    let res = json_decode(webapi#http#post('https://qiita.com/api/v2/items', json_encode(params),
                                          \ {'Content-Type': 'application/json', 'Authorization': 'Bearer ' . self.token}).content)
   endif
   if has_key(res, 'type')
@@ -60,7 +60,7 @@ function! s:api.post_item(params)
 endfunction
 
 function! s:api.item(id)
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/items/%s', a:id)).content)
+  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/items/%s', a:id)).content)
   if has_key(res, 'type')
     throw res.type
   endif
@@ -76,7 +76,7 @@ function! s:api.item(id)
 endfunction
 
 function! s:api.user(user)
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s', a:user), {}, {'Authorization': 'Bearer ' . self.token}).content)
+  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s', a:user), {}, {'Authorization': 'Bearer ' . self.token}).content)
   if has_key(res, 'type')
     throw res.type
   endif
@@ -100,7 +100,7 @@ function! s:user.item(id)
 endfunction
 
 function! s:user.items()
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s/items', self.url_name), {}, {'Authorization': 'Bearer ' . self.token}).content)
+  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s/items', self.url_name), {}, {'Authorization': 'Bearer ' . self.token}).content)
   if type(res) == 4 && has_key(res, 'type')
     throw res.type
   endif
@@ -123,11 +123,11 @@ function! s:user.items()
 endfunction
 
 function! s:user.stocks()
-  return webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s/stocks', self.url_name), {}, {'Authorization': 'Bearer ' . self.token}).content)
+  return json_decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s/stocks', self.url_name), {}, {'Authorization': 'Bearer ' . self.token}).content)
 endfunction
 
 function! s:tag.items()
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v2/tags/%s/items', self.name), {}, {'Authorization': 'Bearer ' . self.token}).content)
+  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/tags/%s/items', self.name), {}, {'Authorization': 'Bearer ' . self.token}).content)
   if type(res) == 4 && has_key(res, 'type')
     throw res.type
   endif
@@ -150,7 +150,7 @@ function! s:tag.items()
 endfunction
 
 function! s:item.update()
-  let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), webapi#json#encode(self), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT', 'Authorization': 'Bearer ' . self.token}).content)
+  let res = json_decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), json_encode(self), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT', 'Authorization': 'Bearer ' . self.token}).content)
   if has_key(res, 'type')
     throw res.type
   endif
@@ -202,7 +202,7 @@ function! qiita#createApi(url_name, token)
 endfunction
 
 function! qiita#createApiWithAuth(url_name, password)
-  let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v2/auth', {'url_name': a:url_name, 'password': a:password}).content)
+  let res = json_decode(webapi#http#post('https://qiita.com/api/v2/auth', {'url_name': a:url_name, 'password': a:password}).content)
   if has_key(res, 'type')
     throw res.type
   endif
