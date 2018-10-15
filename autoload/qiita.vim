@@ -228,7 +228,13 @@ endfunction
 function! s:delete_item(api, id)
   redraw | echon 'Deleting item... '
   let item = a:api.item(a:id)
-  call item.delete()
+  try
+    call item.delete()
+  catch
+    redraw
+    echohl ErrorMsg | echomsg 'delete_item> item.delete: ' . v:exception | echohl None
+    return
+  endtry
   redraw | echomsg 'Done'
 endfunction
 
