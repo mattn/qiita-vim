@@ -254,7 +254,13 @@ function! s:write_item(api, id, title, content)
     let item.title = a:title
     let item.body = a:content
     call s:fix_tags(item.tags)
-    call item.update()
+    try
+      call item.update()
+    catch
+      redraw
+      echohl ErrorMsg | echomsg 'write_item: updating item: ' . v:exception | echohl None
+      return
+    endtry
   else
     redraw | echon 'Posting item... '
     let tag = expand('%:e')
