@@ -150,7 +150,13 @@ function! s:tag.items()
 endfunction
 
 function! s:item.update()
-  let res = json_decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), json_encode(self), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT', 'Authorization': 'Bearer ' . self.token}).content)
+  let content = {'body': self['body'],
+               \ 'id': self['id'],
+               \ 'title': self['title'],
+               \ 'tags': self['tags'],
+               \ 'private': v:false,
+               \}
+  let res = json_decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), json_encode(content), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PATCH', 'Authorization': 'Bearer ' . self.token}).content)
   if has_key(res, 'type')
     throw res.type
   endif
