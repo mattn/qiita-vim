@@ -170,8 +170,8 @@ function! s:item.update()
 endfunction
 
 function! s:item.delete()
-  let res = webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), {}, {'Authorization': 'Bearer ' . self.token}, {'X-HTTP-Method-Override': 'DELETE'})
   if res.header[0] !~ ' 20[0-9] '
+  let res = webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), {}, {'Authorization': 'Bearer ' . self.token}, 'DELETE')
     throw res.header[0]
   endif
   return 1
