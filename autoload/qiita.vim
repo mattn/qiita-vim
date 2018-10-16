@@ -7,10 +7,20 @@ function! s:api.rate_limit()
   return json_decode(webapi#http#get('https://qiita.com/api/v2/rate_limit', {}, {'Authorization': 'Bearer ' . self.token}).content)
 endfunction
 
-function! s:api.tag(name)
-  let tags = self.tags()
-  let tags = filter(tags, 'v:val.name == a:name')
-  return tags[0]
+function! s:api.tag(id)
+  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/tags/%s', a:id), {}, {'Authorization': 'Bearer ' . self.token}).content)
+  if has_key(res, 'type')
+    throw res.type
+  endif
+  let tag = deepcopy(s:tag)
+  let tag['token'] = self.token
+  for [k, v] in items(res)
+    if !has_key(tag, k)
+      let tag[k] =v
+    endif
+    unlet v
+  endfor
+  return tag
 endfunction
 
 function! s:api.tags()
