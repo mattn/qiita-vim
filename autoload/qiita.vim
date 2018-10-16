@@ -125,7 +125,7 @@ function! s:user.stocks()
 endfunction
 
 function! s:tag.items()
-  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/tags/%s/items', self.name), {}, {'Authorization': 'Bearer ' . self.token}).content)
+  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/tags/%s/items', self.id), {}, {'Authorization': 'Bearer ' . self.token}).content)
   if type(res) == 4 && has_key(res, 'type')
     throw res.type
   endif
