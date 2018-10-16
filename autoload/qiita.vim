@@ -38,7 +38,6 @@ endfunction
 
 function! s:api.post_item(params)
   let params = deepcopy(a:params)
-  let params['token'] = self.token
   if has_key(params, 'id')
     let res = json_decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', params['id']), json_encode(params),
                                                 \ {'Content-Type': 'application/json', 'Authorization': 'Bearer ' . self.token}).content)
@@ -82,7 +81,6 @@ function! s:api.user(user)
   endif
   let user = deepcopy(s:user)
   let user['token'] = self.token
-  let user['item_count'] = res['items']
   let user['url_name'] = res['id']
   for [k, v] in items(res)
     if !has_key(user, k)
