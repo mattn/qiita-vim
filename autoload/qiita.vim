@@ -4,7 +4,17 @@ let s:tag = {}
 let s:item = {}
 
 function! s:api.rate_limit()
-  return json_decode(webapi#http#get('https://qiita.com/api/v2/rate_limit', {}, {'Authorization': 'Bearer ' . self.token}).content)
+  let res = webapi#http#get('https://qiita.com/api/v2/authenticated_user', {}, {'Authorization': 'Bearer ' . self.token})
+  if has_key(json_decode(res.content), 'type')
+    throw res.content.type
+  endif
+"  for [k, v] in items(res.header)
+"    if k == 'rate-remainning'
+"      let s:rate_remain = v
+"    endif
+"  endfor
+  let rate_remain = filter(res.header, 'v:val =~ "rate-remaining: *"')
+  return substitute(rate_remain[0], 'rate-remaining: ', '', '')
 endfunction
 
 function! s:api.tag(id)
