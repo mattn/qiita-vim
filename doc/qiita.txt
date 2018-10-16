@@ -26,10 +26,10 @@ INTRODUCTION                                                *qiita-introduction*
 INTERFACES                                                     *qiita-interface*
 
 
-qiita#createApi({token})                          *qiita-createApi()*
+qiita#createApi({urlname}, {token})                          *qiita-createApi()*
     Create API with given {token}. Return API object.
 >
-    let api = qiita#createApi('XXXXX')
+    let api = qiita#createApi('USER', 'XXXXX')
 <
 qiita#createApiWithAuth({urlname}, {password})    *qiita-createApiWithAuth()*
     Create API with given {urlname}/{password}. Return API object.
@@ -64,7 +64,7 @@ api.post_item({params})                      *qiita-api-post_item()*
     \ 'title': 'from API',
     \ 'body': 'Sorry, I love vim!',
     \ 'tags': [{'name': 'Vim', 'versions': []}, {'name': 'API', 'versions': []}],
-    \ 'private': 1,
+    \ 'private': v:false,
     \})
 <
 user.items()                                  *qiita-user-items()*
@@ -75,7 +75,7 @@ user.items()                                  *qiita-user-items()*
 user.item({uuid})                             *qiita-user-item()*
     Return item object for given {uuid}.
 >
-    let items = user.items()
+    let items = user.item('XXXXX')
 <
 user.stocks()                                 *qiita-user-stocks()*
     Return array of stock information.
