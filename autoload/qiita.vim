@@ -220,17 +220,6 @@ function! qiita#createApi(url_name, token)
   return api
 endfunction
 
-function! qiita#createApiWithAuth(url_name, password)
-  let res = json_decode(webapi#http#post('https://qiita.com/api/v2/auth', {'url_name': a:url_name, 'password': a:password}).content)
-  if has_key(res, 'type')
-    throw res.type
-  endif
-  let api = deepcopy(s:api)
-  let api['url_name'] = a:url_name
-  let api['token'] = res.token
-  return api
-endfunction
-
 function! s:shellwords(str)
   let words = split(a:str, '\%(\([^ \t\''"]\+\)\|''\([^\'']*\)''\|"\(\%([^\"\\]\|\\.\)*\)"\)\zs\s*\ze')
   let words = map(words, 'substitute(v:val, ''\\\([\\ ]\)'', ''\1'', "g")')
