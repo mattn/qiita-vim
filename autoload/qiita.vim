@@ -198,16 +198,15 @@ function! qiita#login()
     let token = lines[1]
   endif
   if len(token) == 0
-    let url_name = input("Qiita Username: ")
-    let passqword = inputsecret("Qiita Password: ")
+    let url_name = input("Qiita name: ")
+    echomsg 'Please make token at https://qiita.com/settings/applications:'
+    let token = input("token: ")
     try
-      let api = qiita#createApiWithAuth(url_name, passqword)
-      let token = api.token
       call writefile([url_name, token], s:configfile)
     catch
       redraw
       echohl ErrorMsg | echomsg 'qiita#login: ' . v:exception | echohl None
-      throw "couldn't authorize"
+      throw "couldn't write to config"
     endtry
   endif
   return qiita#createApi(url_name, token)
