@@ -8,8 +8,10 @@ function! s:api.rate_limit()
   if has_key(json_decode(res.content), 'type')
     throw res.content.type
   endif
-  let rate_remain = filter(res.header, 'v:val =~ "rate-remaining: *"')
-  return substitute(rate_remain[0], 'rate-remaining: ', '', '')
+  let rate_limit = filter(deepcopy(res.header), 'v:val =~ "rate-limit: *"')
+  let rate_remain = filter(deepcopy(res.header), 'v:val =~ "rate-remaining: *"')
+  let res = {'rate-limit': substitute(rate_limit[0], 'rate-limit: ', '', ''), 'rate-remaining': substitute(rate_remain[0], 'rate-remaining: ', '', '')}
+  return res
 endfunction
 
 function! s:api.tag(id)
