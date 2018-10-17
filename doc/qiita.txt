@@ -39,7 +39,7 @@ qiita#createApiWithAuth({urlname}, {password})    *qiita-createApiWithAuth()*
 api.rate_limit()                             *qiita-api-rate_limit()*
     Return information about rate limits.
 >
-    let user = api.user('mattn@github')
+    let  = api.rate_limit()
 <
 
 api.user({name})                             *qiita-api-user()*
