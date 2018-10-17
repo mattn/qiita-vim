@@ -31,11 +31,7 @@ qiita#createApi({urlname}, {token})                          *qiita-createApi()*
 >
     let api = qiita#createApi('USER', 'XXXXX')
 <
-qiita#createApiWithAuth({urlname}, {password})    *qiita-createApiWithAuth()*
-    Create API with given {urlname}/{password}. Return API object.
->
-    let api = qiita#createApiWithAuth('USER', 'PASS')
-<
+
 api.rate_limit()                             *qiita-api-rate_limit()*
     Return information about rate limits.
 >
