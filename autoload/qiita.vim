@@ -8,11 +8,6 @@ function! s:api.rate_limit()
   if has_key(json_decode(res.content), 'type')
     throw res.content.type
   endif
-"  for [k, v] in items(res.header)
-"    if k == 'rate-remainning'
-"      let s:rate_remain = v
-"    endif
-"  endfor
   let rate_remain = filter(res.header, 'v:val =~ "rate-remaining: *"')
   return substitute(rate_remain[0], 'rate-remaining: ', '', '')
 endfunction
