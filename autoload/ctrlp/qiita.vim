@@ -23,7 +23,7 @@ endif
 function! ctrlp#qiita#init()
   let api = qiita#login()
   let s:list = api.user(api.url_name).items()
-  return map(s:list, 'v:val.title . "\t" . v:val.uuid')
+  return map(s:list, 'v:val.title . "\t" . v:val.id')
 endfunc
 
 function! ctrlp#qiita#accept(mode, str)

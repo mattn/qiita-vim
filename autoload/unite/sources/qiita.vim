@@ -26,9 +26,9 @@ function! s:source.gather_candidates(args, context)
   let items = api.user(api.url_name).items()
   return map(items, '{
         \ "abbr": v:val.title,
-        \ "word": v:val["uuid"],
-        \ "action__config": v:val["uuid"],
-        \ "action__qiita": v:val["uuid"],
+        \ "word": v:val["id"],
+        \ "action__config": v:val["id"],
+        \ "action__qiita": v:val["id"],
         \ }')
 endfunction
 

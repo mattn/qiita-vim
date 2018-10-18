@@ -4,19 +4,36 @@ let s:tag = {}
 let s:item = {}
 
 function! s:api.rate_limit()
-  return webapi#json#decode(webapi#http#get('https://qiita.com/api/v1/rate_limit', {'token': self.token}).content)
+  let res = webapi#http#get('https://qiita.com/api/v2/authenticated_user', {}, {'Authorization': 'Bearer ' . self.token})
+  if has_key(json_decode(res.content), 'type')
+    throw res.content.type
+  endif
+  let rate_limit = filter(deepcopy(res.header), 'v:val =~ "rate-limit: *"')
+  let rate_remain = filter(deepcopy(res.header), 'v:val =~ "rate-remaining: *"')
+  let res = {'rate-limit': substitute(rate_limit[0], 'rate-limit: ', '', ''), 'rate-remaining': substitute(rate_remain[0], 'rate-remaining: ', '', '')}
+  return res
 endfunction
 
-function! s:api.tag(name)
-  let tags = self.tags()
-  let tags = filter(tags, 'v:val.name == a:name')
-  return tags[0]
+function! s:api.tag(id)
+  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/tags/%s', a:id), {}, {'Authorization': 'Bearer ' . self.token}).content)
+  if has_key(res, 'type')
+    throw res.type
+  endif
+  let tag = deepcopy(s:tag)
+  let tag['token'] = self.token
+  for [k, v] in items(res)
+    if !has_key(tag, k)
+      let tag[k] =v
+    endif
+    unlet v
+  endfor
+  return tag
 endfunction
 
 function! s:api.tags()
-  let res = webapi#json#decode(webapi#http#get('https://qiita.com/api/v1/tags', {'token': self.token}).content)
-  if type(res) == 4 && has_key(res, 'error')
-    throw res.error
+  let res = json_decode(webapi#http#get('https://qiita.com/api/v2/tags', {}, {'Authorization': 'Bearer ' . self.token}).content)
+  if type(res) == 4 && has_key(res, 'type')
+    throw res.type
   endif
   if type(res) != 3
     throw 'invalid response'
@@ -38,14 +55,15 @@ endfunction
 
 function! s:api.post_item(params)
   let params = deepcopy(a:params)
-  let params['token'] = self.token
-  if has_key(params, 'uuid')
-    let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v1/items/%s', params['uuid']), webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
+  if has_key(params, 'id')
+    let res = json_decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', params['id']), json_encode(params),
+                                                \ {'Content-Type': 'application/json', 'Authorization': 'Bearer ' . self.token}).content)
   else
-    let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v1/items', webapi#json#encode(params), {'Content-Type': 'application/json'}).content)
+    let res = json_decode(webapi#http#post('https://qiita.com/api/v2/items', json_encode(params),
+                                         \ {'Content-Type': 'application/json', 'Authorization': 'Bearer ' . self.token}).content)
   endif
-  if has_key(res, 'error')
-    throw res.error
+  if has_key(res, 'type')
+    throw res.type
   endif
   let item = deepcopy(s:item)
   for [k, v] in items(res)
@@ -57,10 +75,10 @@ function! s:api.post_item(params)
   return item
 endfunction
 
-function! s:api.item(uuid)
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v1/items/%s', a:uuid)).content)
-  if has_key(res, 'error')
-    throw res.error
+function! s:api.item(id)
+  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/items/%s', a:id)).content)
+  if has_key(res, 'type')
+    throw res.type
   endif
   let item = deepcopy(s:item)
   let item['token'] = self.token
@@ -74,13 +92,13 @@ function! s:api.item(uuid)
 endfunction
 
 function! s:api.user(user)
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v1/users/%s', a:user), {'token': self.token}).content)
-  if has_key(res, 'error')
-    throw res.error
+  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s', a:user), {}, {'Authorization': 'Bearer ' . self.token}).content)
+  if has_key(res, 'type')
+    throw res.type
   endif
   let user = deepcopy(s:user)
   let user['token'] = self.token
-  let user['item_count'] = res['items']
+  let user['url_name'] = res['id']
   for [k, v] in items(res)
     if !has_key(user, k)
       let user[k] = v
@@ -90,16 +108,16 @@ function! s:api.user(user)
   return user
 endfunction
 
-function! s:user.item(uuid)
+function! s:user.item(id)
   let items = self.items()
-  let items = filter(items, 'v:val.uuid == a:uuid')
+  let items = filter(items, 'v:val.id == a:id')
   return items[0]
 endfunction
 
 function! s:user.items()
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v1/users/%s/items', self.url_name), {'token': self.token}).content)
-  if type(res) == 4 && has_key(res, 'error')
-    throw res.error
+  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s/items', self.url_name), {}, {'Authorization': 'Bearer ' . self.token}).content)
+  if type(res) == 4 && has_key(res, 'type')
+    throw res.type
   endif
   if type(res) != 3
     throw 'invalid response'
@@ -120,13 +138,13 @@ function! s:user.items()
 endfunction
 
 function! s:user.stocks()
-  return webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v1/users/%s/stocks', self.url_name), {'token': self.token}).content)
+  return json_decode(webapi#http#get(printf('https://qiita.com/api/v2/users/%s/stocks', self.url_name), {}, {'Authorization': 'Bearer ' . self.token}).content)
 endfunction
 
 function! s:tag.items()
-  let res = webapi#json#decode(webapi#http#get(printf('https://qiita.com/api/v1/tags/%s/items', self.name), {'token': self.token}).content)
-  if type(res) == 4 && has_key(res, 'error')
-    throw res.error
+  let res = json_decode(webapi#http#get(printf('https://qiita.com/api/v2/tags/%s/items', self.id), {}, {'Authorization': 'Bearer ' . self.token}).content)
+  if type(res) == 4 && has_key(res, 'type')
+    throw res.type
   endif
   if type(res) != 3
     throw 'invalid response'
@@ -147,9 +165,15 @@ function! s:tag.items()
 endfunction
 
 function! s:item.update()
-  let res = webapi#json#decode(webapi#http#post(printf('https://qiita.com/api/v1/items/%s', self['uuid']), webapi#json#encode(self), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT'}).content)
-  if has_key(res, 'error')
-    throw res.error
+  let content = {'body': self['body'],
+               \ 'id': self['id'],
+               \ 'title': self['title'],
+               \ 'tags': self['tags'],
+               \ 'private': v:false,
+               \}
+  let res = json_decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), json_encode(content), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PATCH', 'Authorization': 'Bearer ' . self.token}).content)
+  if has_key(res, 'type')
+    throw res.type
   endif
   for [k, v] in items(res)
     if !has_key(self, k)
@@ -161,26 +185,31 @@ function! s:item.update()
 endfunction
 
 function! s:item.delete()
-  let res = webapi#http#post(printf('https://qiita.com/api/v1/items/%s', self['uuid']), {'token': self.token}, {'X-HTTP-Method-Override': 'DELETE'})
-  if res.header[0] !~ ' 20[0-9] '
-    throw res.header[0]
+  let res = webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), {}, {'Authorization': 'Bearer ' . self.token}, 'DELETE')
+  if res.status !~ '20[0-9]'
+    throw res.content
   endif
   return 1
 endfunction
 
 function! qiita#login()
   let token = ''
-  if filereadable(s:configfile)
+  if filereadable(s:configfile) && len(readfile(s:configfile)) != 0
     let lines = readfile(s:configfile)
     let url_name = lines[0]
     let token = lines[1]
   endif
   if len(token) == 0
-    let url_name = input("Qiita Username: ")
-    let passqword = inputsecret("Qiita Password: ")
-    let api = qiita#createApiWithAuth(url_name, passqword)
-    let token = api.token
-    call writefile([url_name, token], s:configfile)
+    let url_name = input("Qiita name: ")
+    echomsg 'Please make token at https://qiita.com/settings/applications:'
+    let token = input("token: ")
+    try
+      call writefile([url_name, token], s:configfile)
+    catch
+      redraw
+      echohl ErrorMsg | echomsg 'qiita#login: ' . v:exception | echohl None
+      throw "couldn't write to config"
+    endtry
   endif
   return qiita#createApi(url_name, token)
 endfunction
@@ -192,17 +221,6 @@ function! qiita#createApi(url_name, token)
   return api
 endfunction
 
-function! qiita#createApiWithAuth(url_name, password)
-  let res = webapi#json#decode(webapi#http#post('https://qiita.com/api/v1/auth', {'url_name': a:url_name, 'password': a:password}).content)
-  if has_key(res, 'error')
-    throw res.error
-  endif
-  let api = deepcopy(s:api)
-  let api['url_name'] = a:url_name
-  let api['token'] = res.token
-  return api
-endfunction
-
 function! s:shellwords(str)
   let words = split(a:str, '\%(\([^ \t\''"]\+\)\|''\([^\'']*\)''\|"\(\%([^\"\\]\|\\.\)*\)"\)\zs\s*\ze')
   let words = map(words, 'substitute(v:val, ''\\\([\\ ]\)'', ''\1'', "g")')
@@ -210,10 +228,16 @@ function! s:shellwords(str)
   return words
 endfunction
 
-function! s:delete_item(api, uuid)
+function! s:delete_item(api, id)
   redraw | echon 'Deleting item... '
-  let item = a:api.item(a:uuid)
-  call item.delete()
+  let item = a:api.item(a:id)
+  try
+    call item.delete()
+  catch
+    redraw
+    echohl ErrorMsg | echomsg 'delete_item> item.delete: ' . v:exception | echohl None
+    return
+  endtry
   redraw | echomsg 'Done'
 endfunction
 
@@ -232,14 +256,20 @@ function! s:fix_tags(tags)
   endfor
 endfunction
 
-function! s:write_item(api, uuid, title, content)
-  if len(a:uuid)
+function! s:write_item(api, id, title, content)
+  if len(a:id)
     redraw | echon 'Updating item... '
-    let item = a:api.item(a:uuid)
+    let item = a:api.item(a:id)
     let item.title = a:title
     let item.body = a:content
     call s:fix_tags(item.tags)
-    call item.update()
+    try
+      call item.update()
+    catch
+      redraw
+      echohl ErrorMsg | echomsg 'write_item: updating item: ' . v:exception | echohl None
+      return
+    endtry
   else
     redraw | echon 'Posting item... '
     let tag = expand('%:e')
@@ -249,12 +279,18 @@ function! s:write_item(api, uuid, title, content)
     if len(tag) == 0
       let tag = 'text'
     endif
-    let item = a:api.post_item({
-    \ 'title': a:title,
-    \ 'body': a:content,
-    \ 'tags': [{'name': tag}],
-    \ 'private': 0,
-    \})
+    try
+      let item = a:api.post_item({
+      \ 'title': a:title,
+      \ 'body': a:content,
+      \ 'tags': [{'name': tag}],
+      \ 'private': v:false,
+      \})
+    catch
+      redraw
+      echohl ErrorMsg | echomsg 'write_item: ' . v:exception | echohl None
+      return
+    endtry
   endif
   redraw | echomsg 'Done: ' . item.url
   setlocal nomodified
@@ -270,8 +306,8 @@ function! s:write_action(fname)
   endif
 endfunction
 
-function! s:open_item(api, uuid)
-  let winnum = bufwinnr(bufnr('qiita:'.a:uuid))
+function! s:open_item(api, id)
+  let winnum = bufwinnr(bufnr('qiita:'.a:id))
   if winnum != -1
     if winnum != bufwinnr('%')
       exe winnum 'wincmd w'
@@ -280,15 +316,15 @@ function! s:open_item(api, uuid)
   else
     exec 'silent noautocmd new'
     setlocal noswapfile
-    exec 'noautocmd file qiita:'.a:uuid
+    exec 'noautocmd file qiita:'.a:id
   endif
   filetype detect
   silent %d _
   echon 'Getting item... '
   redraw
 
-  let item = a:api.item(a:uuid)
-  call setline(1, [webapi#html#decodeEntityReference(item.title)]+split(item.raw_body, "\n"))
+  let item = a:api.item(a:id)
+  call setline(1, [webapi#html#decodeEntityReference(item.title)]+split(item.body, "\n"))
   setlocal buftype=acwrite bufhidden=delete noswapfile
   setlocal nomodified
   setlocal ft=markdown
@@ -298,10 +334,10 @@ endfunction
 function! s:list_action()
   let line = getline('.')
   let mx = '^\([a-z0-9]\+\)\ze:'
-  let uuid = matchstr(line, mx)
-  if len(uuid)
+  let id = matchstr(line, mx)
+  if len(id)
     let api = qiita#createApi(b:qiita_url_name, b:qiita_token)
-    call s:open_item(api, uuid)
+    call s:open_item(api, id)
   endif
 endfunction
 
@@ -322,11 +358,11 @@ function! s:list_user_items(api, user)
     silent %d _
     redraw | echon 'Listing items... '
     let items = a:api.user(a:user).items()
-    call setline(1, split(join(map(items, 'v:val.uuid . ": " . webapi#html#decodeEntityReference(v:val.title)'), "\n"), "\n"))
+    call setline(1, split(join(map(items, 'v:val.id . ": " . webapi#html#decodeEntityReference(v:val.title)'), "\n"), "\n"))
   catch
     bw!
     redraw
-    echohl ErrorMsg | echomsg v:exception | echohl None
+    echohl ErrorMsg | echomsg 'list_user_items: ' . v:exception | echohl None
     return
   finally
     let &undolevels = old_undolevels
@@ -350,10 +386,16 @@ function! qiita#Qiita(...)
   redraw
 
   let ls = ''
-  let uuid = ''
+  let id = ''
   let editpost = 0
   let deletepost = 0
-  let api = qiita#login()
+  try
+    let api = qiita#login()
+  catch
+    redraw
+    echohl ErrorMsg | echomsg "qiita#Qiita: " . v:exception | echohl None
+    return
+  endtry
 
   let args = (a:0 > 0) ? s:shellwords(a:1) : []
   for arg in args
@@ -364,17 +406,17 @@ function! qiita#Qiita(...)
       let ls = api.url_name
     elseif arg =~ '^\(-e\|--edit\)$\C'
       let fname = expand("%:p")
-      let uuid = matchstr(fname, '.*qiita:\zs[a-z0-9]\+\ze$')
+      let id = matchstr(fname, '.*qiita:\zs[a-z0-9]\+\ze$')
       let editpost = 1
     elseif arg =~ '^\(-d\|--delete\)$\C'
       let fname = expand("%:p")
-      let uuid = matchstr(fname, '.*qiita:\zs[a-z0-9]\+\ze$')
+      let id = matchstr(fname, '.*qiita:\zs[a-z0-9]\+\ze$')
       let deletepost = 1
     elseif arg !~ '^-'
       if len(ls) > 0
         let ls = arg
       elseif arg =~ '^[0-9a-z]\+$\C'
-        let uuid = arg
+        let id = arg
       else
         echohl ErrorMsg | echomsg 'Invalid arguments: '.arg | echohl None
         unlet args
@@ -394,11 +436,11 @@ function! qiita#Qiita(...)
     if editpost
       let title = getline(1)
       let content = join(getline(2, line('$')), "\n")
-      call s:write_item(api, uuid, title, content)
+      call s:write_item(api, id, title, content)
     elseif deletepost
-      call s:delete_item(api, uuid)
-    elseif len(uuid) > 0
-      call s:open_item(api, uuid)
+      call s:delete_item(api, id)
+    elseif len(id) > 0
+      call s:open_item(api, id)
     else
       let title = getline(1)
       let content = join(getline(2, line('$')), "\n")
