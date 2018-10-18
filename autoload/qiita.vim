@@ -201,6 +201,7 @@ function! qiita#login()
   endif
   if len(token) == 0
     let url_name = input("Qiita name: ")
+    redraw
     echomsg 'Please make token at https://qiita.com/settings/applications:'
     let token = input("token: ")
     try
