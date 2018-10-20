@@ -273,7 +273,7 @@ function! Gettag(tags_string)
     endfor
 
     let tags_list = matchlist(tags_string, expr)
-    return tags_list
+    return tags_list[1:]
 endfunction
 
 
