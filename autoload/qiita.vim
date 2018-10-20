@@ -461,16 +461,18 @@ function! qiita#Qiita(...)
   else
     if editpost
       let title = getline(1)
-      let content = join(getline(2, line('$')), "\n")
-      call s:write_item(api, id, title, content)
+      let tags = s:gettags(getline(2))
+      let content = join(getline(3, line('$')), "\n")
+      call s:write_item(api, id, title, tags, content)
     elseif deletepost
       call s:delete_item(api, id)
     elseif len(id) > 0
       call s:open_item(api, id)
     else
       let title = getline(1)
-      let content = join(getline(2, line('$')), "\n")
-      call s:write_item(api, '', title, content)
+      let tags = s:gettags(getline(2))
+      let content = join(getline(3, line('$')), "\n")
+      call s:write_item(api, '', title, tags, content)
     endif
   endif
   return 1
