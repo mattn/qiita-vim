@@ -258,22 +258,22 @@ function! s:fix_tags(tags)
 endfunction
 
 
-function! Gettag(tag_string)
-  if ! len(a:tag_string)
+function! Gettag(tags_string)
+  if ! len(a:tags_string)
     return []
   else
-    let tag_string = deepcopy(a:tag_string)
-    tag_string = substitute(tag_string, '\zs[^\[\]]*\ze\[[^\]]*\]', '', '') " remove non-tag strings
-    tag_string = substitute(tag_string, '\[[^\]]*\]\zs[^\[]*\ze', '', '')   "
+    let tags_string = deepcopy(a:tags_string)
+    let tags_string = substitute(tags_string, '\zs[^\[\]]*\ze\[[^\]]*\]', '', '')
+    let tags_string = substitute(tags_string, '\[[^\]]*\]\zs[^\[]*\ze', '', '')
 
     " generate expr
     let expr = ""
-    for i in len(substitute(tag_string, '[^\[]', '', 'g'))
       expr += '\[\([^\[]*\)\]'
+    for i in range(len(substitute(tags_string, '[^\[]', '', 'g')))
     endfor
 
-    let tag_list = matchlist(tag_string, expr)
-    return tag_list
+    let tags_list = matchlist(tags_string, expr)
+    return tags_list
 endfunction
 
 
