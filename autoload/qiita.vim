@@ -262,13 +262,18 @@ function! Gettag(tags_string)
   if ! len(a:tags_string)
     return []
   else
+    let bracket_s = len(substitute(a:tags_string, '[^\[]', '', 'g'))
+    let brachet_e = len(substitute(a:tags_string, '[^\]]', '', 'g'))
+    if bracket_s != brachet_e
+      throw "you can't use [] in tag"
+    endif
     let tags_string = deepcopy(a:tags_string)
     let tags_string = substitute(tags_string, '\zs[^\[\]]*\ze\[[^\]]*\]', '', 'g')
     let tags_string = substitute(tags_string, '\[[^\]]*\]\zs[^\[]*\ze', '', 'g')
 
     " generate expr
     let expr = ""
-    for i in range(len(substitute(tags_string, '[^\[]', '', 'g')))
+    for i in range(bracket_s)
       let expr = expr . '\[\([^\[]*\)\]'
     endfor
 
