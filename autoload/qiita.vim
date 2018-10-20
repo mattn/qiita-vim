@@ -263,8 +263,8 @@ function! Gettag(tags_string)
     return []
   else
     let tags_string = deepcopy(a:tags_string)
-    let tags_string = substitute(tags_string, '\zs[^\[\]]*\ze\[[^\]]*\]', '', '')
-    let tags_string = substitute(tags_string, '\[[^\]]*\]\zs[^\[]*\ze', '', '')
+    let tags_string = substitute(tags_string, '\zs[^\[\]]*\ze\[[^\]]*\]', '', 'g')
+    let tags_string = substitute(tags_string, '\[[^\]]*\]\zs[^\[]*\ze', '', 'g')
 
     " generate expr
     let expr = ""
