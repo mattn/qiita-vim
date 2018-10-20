@@ -257,6 +257,26 @@ function! s:fix_tags(tags)
   endfor
 endfunction
 
+
+function! Gettag(tag_string)
+  if ! len(a:tag_string)
+    return []
+  else
+    let tag_string = deepcopy(a:tag_string)
+    tag_string = substitute(tag_string, '\zs[^\[\]]*\ze\[[^\]]*\]', '', '') " remove non-tag strings
+    tag_string = substitute(tag_string, '\[[^\]]*\]\zs[^\[]*\ze', '', '')   "
+
+    " generate expr
+    let expr = ""
+    for i in len(substitute(tag_string, '[^\[]', '', 'g'))
+      expr += '\[\([^\[]*\)\]'
+    endfor
+
+    let tag_list = matchlist(tag_string, expr)
+    return tag_list
+endfunction
+
+
 function! s:write_item(api, id, title, content)
   if len(a:id)
     redraw | echon 'Updating item... '
