@@ -268,8 +268,8 @@ function! Gettag(tags_string)
 
     " generate expr
     let expr = ""
-      expr += '\[\([^\[]*\)\]'
     for i in range(len(substitute(tags_string, '[^\[]', '', 'g')))
+      let expr = expr . '\[\([^\[]*\)\]'
     endfor
 
     let tags_list = matchlist(tags_string, expr)
