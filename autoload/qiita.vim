@@ -55,6 +55,9 @@ endfunction
 
 function! s:api.post_item(params)
   let params = deepcopy(a:params)
+  let params['tweet'] = exists("g:qiita_vim_twitter") ? g:qiita_vim_twitter : v:false
+  let params['gist'] = exists("g:qiita_vim_gist") ? g:qiita_vim_gist : v:false
+  let params['private'] = exists("g:qiita_vim_private") ? g:qiita_vim_private : v:false
   if has_key(params, 'id')
     let res = json_decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', params['id']), json_encode(params),
                                                 \ {'Content-Type': 'application/json', 'Authorization': 'Bearer ' . self.token}).content)
@@ -169,7 +172,7 @@ function! s:item.update()
                \ 'id': self['id'],
                \ 'title': self['title'],
                \ 'tags': self['tags'],
-               \ 'private': v:false,
+               \ 'private': exists("g:qiita_vim_private") ? g:qiita_vim_private : v:false,
                \}
   let res = json_decode(webapi#http#post(printf('https://qiita.com/api/v2/items/%s', self['id']), json_encode(content), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PATCH', 'Authorization': 'Bearer ' . self.token}).content)
   if has_key(res, 'type')
@@ -285,7 +288,6 @@ function! s:write_item(api, id, title, content)
       \ 'title': a:title,
       \ 'body': a:content,
       \ 'tags': [{'name': tag}],
-      \ 'private': v:false,
       \})
     catch
       redraw
