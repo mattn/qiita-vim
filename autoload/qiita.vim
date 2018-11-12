@@ -263,14 +263,10 @@ function! s:gettags(tags_string)
     return []
   endif
 
-  let tags_list = split(a:tags_string, '\s')
+  let tags_list = split(a:tags_string, '\s+')
   let ret = []
   " generate tags list.
   for id in tags_list
-    if id == ''
-      continue
-    endif
-
     if match(id, ":") > 0
       call add(ret, {'name': matchstr(id, "\\zs[^:]*\\ze:"),
                    \ 'versions': [matchstr(id, ":\\zs.*\\ze")]})
