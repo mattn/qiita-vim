@@ -258,7 +258,7 @@ function! s:fix_tags(tags)
 endfunction
 
 
-function! Gettag(tags_string)
+function! s:gettags(tags_string)
   if ! len(a:tags_string)
     return []
   else
