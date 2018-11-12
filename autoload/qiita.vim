@@ -275,12 +275,13 @@ function! s:gettags(tags_string)
 endfunction
 
 
-function! s:write_item(api, id, title, content)
+function! s:write_item(api, id, title, tags, content)
   if len(a:id)
     redraw | echon 'Updating item... '
     let item = a:api.item(a:id)
     let item.title = a:title
     let item.body = a:content
+    let item.tags = a:tags
     call s:fix_tags(item.tags)
     try
       call item.update()
@@ -291,18 +292,20 @@ function! s:write_item(api, id, title, content)
     endtry
   else
     redraw | echon 'Posting item... '
-    let tag = expand('%:e')
-    if len(tag) == 0
-      let tag = &ft
-    endif
-    if len(tag) == 0
-      let tag = 'text'
+    if len(a:tags) == 0
+      if len(&ft) == 0
+        let l:tags = [{'name': 'text'}]
+      else
+        let l:tags = [{'name': &ft}]
+      endif
+    else
+      let l:tags = a:tags
     endif
     try
       let item = a:api.post_item({
       \ 'title': a:title,
       \ 'body': a:content,
-      \ 'tags': [{'name': tag}],
+      \ 'tags': l:tags,
       \ 'private': v:false,
       \})
     catch
