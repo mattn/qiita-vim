@@ -259,26 +259,27 @@ endfunction
 
 
 function! s:gettags(tags_string)
-  if ! len(a:tags_string)
+  if len(a:tags_string) == 0
     return []
-  else
-    let tags_list = split(a:tags_string, ' ')
-    let ret = []
-    " generate tags list.
-    for id in tags_list
-      if id == ''
-        continue
-      endif
+  endif
 
-      if match(id, ":") > 0
-        call add(ret, {'name': matchstr(id, "\\zs[^:]*\\ze:"),
-                     \ 'versions': [matchstr(id, ":\\zs.*\\ze")]})
-      else
-        call add(ret, {'name': id})
-      endif
-    endfor
+  let tags_list = split(a:tags_string, ' ')
+  let ret = []
+  " generate tags list.
+  for id in tags_list
+    if id == ''
+      continue
+    endif
 
-    return ret
+    if match(id, ":") > 0
+      call add(ret, {'name': matchstr(id, "\\zs[^:]*\\ze:"),
+                   \ 'versions': [matchstr(id, ":\\zs.*\\ze")]})
+    else
+      call add(ret, {'name': id})
+    endif
+  endfor
+
+  return ret
 endfunction
 
 
