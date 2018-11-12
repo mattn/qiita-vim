@@ -353,7 +353,16 @@ function! s:open_item(api, id)
   redraw
 
   let item = a:api.item(a:id)
-  call setline(1, [webapi#html#decodeEntityReference(item.title)]+split(item.body, "\n"))
+  let l:tag_line = ''
+  for tag in item.tags
+    if tag['versions'] == []
+      let tag_line.=tag['name'] . ' '
+    else
+      let tag_line.=tag['name'] . ':' . tag['versions'][0] . ' '
+    endif
+    " [{'name': '', 'versions': ''}, ...]
+  endfor
+  call setline(1, [webapi#html#decodeEntityReference(item.title), tag_line]+split(item.body, "\n"))
   setlocal buftype=acwrite bufhidden=delete noswapfile
   setlocal nomodified
   setlocal ft=markdown
