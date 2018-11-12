@@ -15,6 +15,7 @@ CONTENTS                                                        *qiita-contents*
 INTRODUCTION           |qiita-introduction|
 INTERFACE              |qiita-interface|
 COMMAND                |qiita-command|
+VARIABLE               |qiita-variable|
 LINKS                  |qiita-links|
 
 ==============================================================================
@@ -117,6 +118,27 @@ COMMMAND                                                         *qiita-command*
 
     :Qiita -l cho45
 <
+==============================================================================
+VARIABLE                                                        *qiita-variable*
+
+All variables are set to false by default
+
+g:qiita_vim_twitter                           *g:qiita_vim_twitter*
+    true if you want to post to twitter.
+>
+    let g:qiita_vim_twitter = v:true
+<
+g:qiita_vim_gist                              *g:qiita_vim_gist*
+    true if you want to post to twitter.
+>
+    let g:qiita_vim_gist = v:true
+<
+g:qiita_vim_private                           *g:qiita_vim_private*
+    true if you want to post privately
+>
+    let g:qiita_vim_private = v:true
+<
+
 ==============================================================================
 LINKS                                                              *qiita-links*
 
