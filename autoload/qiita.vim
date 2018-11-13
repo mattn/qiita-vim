@@ -260,12 +260,35 @@ function! s:fix_tags(tags)
   endfor
 endfunction
 
-function! s:write_item(api, id, title, content)
+
+function! s:gettags(tags_string)
+  if len(a:tags_string) == 0
+    return []
+  endif
+
+  let tags_list = split(a:tags_string, '\s+')
+  let ret = []
+  " generate tags list.
+  for id in tags_list
+    if match(id, ":") > 0
+      call add(ret, {'name': matchstr(id, "\\zs[^:]*\\ze:"),
+                   \ 'versions': [matchstr(id, ":\\zs.*\\ze")]})
+    else
+      call add(ret, {'name': id})
+    endif
+  endfor
+
+  return ret
+endfunction
+
+
+function! s:write_item(api, id, title, tags, content)
   if len(a:id)
     redraw | echon 'Updating item... '
     let item = a:api.item(a:id)
     let item.title = a:title
     let item.body = a:content
+    let item.tags = a:tags
     call s:fix_tags(item.tags)
     try
       call item.update()
@@ -276,18 +299,21 @@ function! s:write_item(api, id, title, content)
     endtry
   else
     redraw | echon 'Posting item... '
-    let tag = expand('%:e')
-    if len(tag) == 0
-      let tag = &ft
-    endif
-    if len(tag) == 0
-      let tag = 'text'
+    if len(a:tags) == 0
+      if len(&ft) == 0
+        let l:tags = [{'name': 'text'}]
+      else
+        let l:tags = [{'name': &ft}]
+      endif
+    else
+      let l:tags = a:tags
     endif
     try
       let item = a:api.post_item({
       \ 'title': a:title,
       \ 'body': a:content,
-      \ 'tags': [{'name': tag}],
+      \ 'tags': l:tags,
+      \ 'private': v:false,
       \})
     catch
       redraw
@@ -327,7 +353,16 @@ function! s:open_item(api, id)
   redraw
 
   let item = a:api.item(a:id)
-  call setline(1, [webapi#html#decodeEntityReference(item.title)]+split(item.body, "\n"))
+  let l:tag_line = ''
+  for tag in item.tags
+    if tag['versions'] == []
+      let tag_line.=tag['name'] . ' '
+    else
+      let tag_line.=tag['name'] . ':' . tag['versions'][0] . ' '
+    endif
+    " [{'name': '', 'versions': ''}, ...]
+  endfor
+  call setline(1, [webapi#html#decodeEntityReference(item.title), tag_line]+split(item.body, "\n"))
   setlocal buftype=acwrite bufhidden=delete noswapfile
   setlocal nomodified
   setlocal ft=markdown
@@ -438,16 +473,18 @@ function! qiita#Qiita(...)
   else
     if editpost
       let title = getline(1)
-      let content = join(getline(2, line('$')), "\n")
-      call s:write_item(api, id, title, content)
+      let tags = s:gettags(getline(2))
+      let content = join(getline(3, '$'), "\n")
+      call s:write_item(api, id, title, tags, content)
     elseif deletepost
       call s:delete_item(api, id)
     elseif len(id) > 0
       call s:open_item(api, id)
     else
       let title = getline(1)
-      let content = join(getline(2, line('$')), "\n")
-      call s:write_item(api, '', title, content)
+      let tags = s:gettags(getline(2))
+      let content = join(getline(3, '$'), "\n")
+      call s:write_item(api, '', title, tags, content)
     endif
   endif
   return 1
