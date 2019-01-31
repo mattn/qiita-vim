@@ -263,7 +263,7 @@ endfunction
 
 function! s:gettags(tags_string)
   if len(a:tags_string) == 0
-    return []
+    return [{'name':''}]
   endif
 
   let tags_list = split(a:tags_string, '\s\+')
