@@ -263,7 +263,7 @@ endfunction
 
 function! s:gettags(tags_string)
   if len(a:tags_string) == 0
-    return []
+    return [{'name':''}]
   endif
 
   let tags_list = split(a:tags_string, '\s\+')
@@ -299,20 +299,12 @@ function! s:write_item(api, id, title, tags, content)
     endtry
   else
     redraw | echon 'Posting item... '
-    if len(a:tags) == 0
-      if len(&ft) == 0
-        let l:tags = [{'name': 'text'}]
-      else
-        let l:tags = [{'name': &ft}]
-      endif
-    else
-      let l:tags = a:tags
-    endif
+    call s:fix_tags(a:tags)
     try
       let item = a:api.post_item({
       \ 'title': a:title,
       \ 'body': a:content,
-      \ 'tags': l:tags,
+      \ 'tags': a:tags,
       \ 'private': v:false,
       \})
     catch
